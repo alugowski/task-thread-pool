@@ -1,0 +1,34 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        cppstd: [11, 17, 23]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build
+        run: |
+          cmake -S . -B build -DCMAKE_CXX_STANDARD={{ matrix.cppstd }} -DCMAKE_BUILD_TYPE=Debug -DTASK_THREAD_POOL_TEST=ON -DTASK_THREAD_POOL_TEST_COVERAGE=ON
+          cmake --build build --config Debug
+
+      - name: Test
+        run: |
+          cd build
+          ctest -C Debug --output-on-failure --verbose
+
+      - name: Upload Coverage to Codecov
+        if: contains(matrix.os, 'ubuntu')
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
+          gcov_include: include/*
