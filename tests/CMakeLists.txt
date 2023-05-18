@@ -27,8 +27,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-message("tests found")
-
 add_executable(functionality_tests basic_test.cpp)
 target_link_libraries(functionality_tests PRIVATE Catch2::Catch2WithMain task_thread_pool::task_thread_pool)
 

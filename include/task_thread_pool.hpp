@@ -20,20 +20,43 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 2
+#define TASK_THREAD_POOL_VERSION_PATCH 3
 
 #include <condition_variable>
+#include <functional>
 #include <future>
+#include <mutex>
 #include <queue>
 #include <thread>
+#include <type_traits>
 
-#if __cplusplus >= 201703L
+// MSVC does not set the __cplusplus macro by default, so we must read it from _MSVC_LANG
+// See https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define TTP_CXX17 1
+#else
+#define TTP_CXX17 0
+#endif
+
+#if TTP_CXX17
 #define NODISCARD [[nodiscard]]
 #else
 #define NODISCARD
 #endif
 
 namespace task_thread_pool {
+
+#if !TTP_CXX17
+    /**
+     * A reimplementation of std::decay_t, which is only available since C++14.
+     */
+    template< class T >
+    using decay_t = typename std::decay<T>::type;
+#endif
+
+    /**
+     * A fast and lightweight thread pool that uses C++11 threads.
+     */
     class task_thread_pool {
     public:
         /**
@@ -67,7 +90,7 @@ namespace task_thread_pool {
          * Tasks already in progress continue executing.
          */
         void clear_task_queue() {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             tasks = {};
         }
 
@@ -77,7 +100,7 @@ namespace task_thread_pool {
          * @return Number of tasks that have been enqueued but not yet started.
          */
         NODISCARD size_t get_num_queued_tasks() const {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return tasks.size();
         }
 
@@ -87,7 +110,7 @@ namespace task_thread_pool {
          * @return Approximate number of tasks currently being processed by worker threads.
          */
         NODISCARD size_t get_num_running_tasks() const {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return num_inflight_tasks;
         }
 
@@ -97,7 +120,7 @@ namespace task_thread_pool {
          * @return Approximate number of tasks both enqueued and running.
          */
         NODISCARD size_t get_num_tasks() const {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return tasks.size() + num_inflight_tasks;
         }
 
@@ -107,8 +130,8 @@ namespace task_thread_pool {
          * @return Number of worker threads.
          */
         NODISCARD unsigned int get_num_threads() const {
-            const std::lock_guard threads_lock(thread_mutex);
-            return threads.size();
+            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
+            return static_cast<unsigned int>(threads.size());
         }
 
         /**
@@ -117,7 +140,7 @@ namespace task_thread_pool {
          * Any in-progress tasks continue executing.
          */
         void pause() {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             pool_paused = true;
         }
 
@@ -125,7 +148,7 @@ namespace task_thread_pool {
          * Resume executing new tasks.
          */
         void unpause() {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             pool_paused = false;
             task_cv.notify_all();
         }
@@ -136,7 +159,7 @@ namespace task_thread_pool {
          * @return true if pause() has been called without an intervening unpause().
          */
         NODISCARD bool is_paused() const {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return pool_paused;
         }
 
@@ -147,12 +170,28 @@ namespace task_thread_pool {
          * @param args Arguments for func. Optional.
          * @return std::future that can be used to get func's return value or thrown exception.
          */
-        template <typename F, typename... A, typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>>
+        template <typename F, typename... A,
+#if TTP_CXX17
+            typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>
+#else
+            typename R = typename std::result_of<decay_t<F>(decay_t<A>...)>::type
+#endif
+            >
         NODISCARD std::future<R> submit(F&& func, A&&... args) {
+            // different implementations for standard and MSVC to work around a MSVC bug.
+#if _MSC_VER
+            // MSVC's std::package_task cannot be moved even though the standard says it should be movable.
+            // The bugfix is waiting for an ABI change to fix.
+            // See https://developercommunity.visualstudio.com/t/unable-to-move-stdpackaged-task-into-any-stl-conta/108672
+            std::shared_ptr<std::packaged_task<R()>> ptask = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
+            submit_detach([ptask] { (*ptask)(); });
+            return ptask->get_future();
+#else
             std::packaged_task<R()> task(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             std::future<R> f = task.get_future();
             submit_detach(std::move(task));
             return f;
+#endif
         }
 
         /**
@@ -162,7 +201,7 @@ namespace task_thread_pool {
          */
         template <typename F>
         void submit_detach(F&& func) {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             tasks.emplace(std::forward<F>(func));
             task_cv.notify_one();
         }
@@ -174,7 +213,7 @@ namespace task_thread_pool {
          */
         template <typename F, typename... A>
         void submit_detach(F&& func, A&&... args) {
-            const std::lock_guard tasks_lock(task_mutex);
+            const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             tasks.emplace(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             task_cv.notify_one();
         }
@@ -183,7 +222,7 @@ namespace task_thread_pool {
          * Block until the task queue is empty. Some tasks may be in-progress when this method returns.
          */
         void wait_for_queued_tasks() {
-            std::unique_lock tasks_lock(task_mutex);
+            std::unique_lock<std::mutex> tasks_lock(task_mutex);
             notify_task_finish = true;
             task_finished_cv.wait(tasks_lock, [&] { return tasks.empty(); });
             notify_task_finish = false;
@@ -193,7 +232,7 @@ namespace task_thread_pool {
          * Block until all tasks have finished.
          */
         void wait_for_tasks() {
-            std::unique_lock tasks_lock(task_mutex);
+            std::unique_lock<std::mutex> tasks_lock(task_mutex);
             notify_task_finish = true;
             task_finished_cv.wait(tasks_lock, [&] { return tasks.empty() && num_inflight_tasks == 0; });
             notify_task_finish = false;
@@ -211,7 +250,7 @@ namespace task_thread_pool {
                 std::packaged_task<void()> task;
 
                 {
-                    std::unique_lock tasks_lock(task_mutex);
+                    std::unique_lock<std::mutex> tasks_lock(task_mutex);
 
                     if (finished_task) {
                         --num_inflight_tasks;
@@ -253,7 +292,7 @@ namespace task_thread_pool {
          * @param num_threads How many threads to start.
          */
         void start_threads(const unsigned int num_threads) {
-            const std::lock_guard threads_lock(thread_mutex);
+            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
 
             for (unsigned int i = 0; i < num_threads; ++i) {
                 threads.emplace_back(&task_thread_pool::worker_main, this);
@@ -264,12 +303,12 @@ namespace task_thread_pool {
          * Stop, join, and destroy all worker threads.
          */
         void stop_all_threads() {
-            const std::lock_guard threads_lock(thread_mutex);
+            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
 
             pool_running = false;
 
             {
-                const std::lock_guard tasks_lock(task_mutex);
+                const std::lock_guard<std::mutex> tasks_lock(task_mutex);
                 task_cv.notify_all();
             }
 
@@ -287,9 +326,9 @@ namespace task_thread_pool {
         std::vector<std::thread> threads;
 
         /**
-         * A mutex for methods that start/stop threads. Using std::recursive_mutex so such methods may delegate.
+         * A mutex for methods that start/stop threads.
          */
-        mutable std::recursive_mutex thread_mutex;
+        mutable std::mutex thread_mutex;
 
         /**
          * The task queue.
@@ -344,6 +383,8 @@ namespace task_thread_pool {
     };
 }
 
+// clean up
 #undef NODISCARD
+#undef TTP_CXX17
 
 #endif

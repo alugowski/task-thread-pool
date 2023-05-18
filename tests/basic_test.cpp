@@ -51,15 +51,16 @@ TEST_CASE("get-methods", "") {
     {
         task_thread_pool::task_thread_pool pool;
         pool.pause();
-        std::atomic<bool> go = false;
-        pool.submit_detach([&] { while (!go) {}});
+        std::atomic<bool> go{false};
+        std::atomic<bool> task_started{false};
+        pool.submit_detach([&] { task_started = true; while (!go) {}});
 
         REQUIRE(pool.get_num_queued_tasks() == 1);
         REQUIRE(pool.get_num_running_tasks() == 0);
         REQUIRE(pool.get_num_tasks() == 1);
 
         pool.unpause();
-        pool.wait_for_queued_tasks();
+        while (!task_started) {}
 
         REQUIRE(pool.get_num_queued_tasks() == 0);
         REQUIRE(pool.get_num_running_tasks() == 1);
@@ -89,7 +90,7 @@ TEST_CASE("get-methods", "") {
 
 
 TEST_CASE("sum", "") {
-    std::atomic<int> count = 0;
+    std::atomic<int> count{0};
     {
         task_thread_pool::task_thread_pool pool;
 
@@ -105,7 +106,7 @@ TEST_CASE("pause", "") {
         task_thread_pool::task_thread_pool pool;
         REQUIRE(pool.is_paused() == false);
 
-        std::atomic<int> count = 0;
+        std::atomic<int> count{0};
 
         pool.pause();
         REQUIRE(pool.is_paused() == true);
@@ -133,7 +134,7 @@ TEST_CASE("pause", "") {
 
     // test destroying a paused pool
     {
-        std::atomic<bool> task_ran = false;
+        std::atomic<bool> task_ran{false};
         {
             task_thread_pool::task_thread_pool pool;
             pool.pause();

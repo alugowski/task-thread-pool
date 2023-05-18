@@ -1,3 +1,5 @@
+[![tests](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml)
+
 `task_thread_pool` is a fast and lightweight C++11 thread pool.
 
 Use this to easily add parallelism to your project without introducing heavy dependencies.
@@ -7,7 +9,7 @@ Use this to easily add parallelism to your project without introducing heavy dep
 * Automated testing on all major platforms and compilers
   * Linux, macOS, Windows
   * GCC, Clang, MSVC
-  * tested with C++11, C++17, C++23
+  * C++11 through C++23
 * Comprehensive test suite, including stress tests
 * Benchmarks help confirm good performance
 

@@ -12,7 +12,7 @@ inline unsigned int measure_number_of_threads(task_thread_pool::task_thread_pool
     std::set<std::thread::id> seen_threads;
     std::mutex seen_mutex;
     std::condition_variable barrier;
-    std::atomic<bool> go = false;
+    std::atomic<bool> go{false};
 
     for (unsigned int i = 0; i < 5 * pool.get_num_threads(); ++i) {
         pool.submit_detach([&]{
@@ -28,5 +28,5 @@ inline unsigned int measure_number_of_threads(task_thread_pool::task_thread_pool
     barrier.notify_all();
     pool.wait_for_tasks();
 
-    return seen_threads.size();
+    return static_cast<unsigned int>(seen_threads.size());
 }

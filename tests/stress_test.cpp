@@ -10,7 +10,7 @@
 
 TEST_CASE("sum", "[stress]") {
     for (int j = 0; j < REPEATS; ++j) {
-        std::atomic<int> count = 0;
+        std::atomic<int> count{0};
         {
             task_thread_pool::task_thread_pool pool;
 

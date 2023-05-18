@@ -147,5 +147,21 @@ static void run_1k_void_lambdas(benchmark::State& state) {
 }
 BENCHMARK(run_1k_void_lambdas);
 
+/**
+ * Measure running a lot of lambdas that return a value.
+ */
+static void run_1k_int_lambdas(benchmark::State& state) {
+    auto func = []{ return 1; };
+
+    for ([[maybe_unused]] auto _ : state) {
+        task_thread_pool::task_thread_pool pool(NUM_THREADS);
+        for (int i = 0; i < 1000; ++i) {
+            std::future<int> f = pool.submit(func);
+            benchmark::DoNotOptimize(f);
+        }
+    }
+}
+BENCHMARK(run_1k_int_lambdas);
+
 
 BENCHMARK_MAIN();
