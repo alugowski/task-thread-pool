@@ -1,0 +1,29 @@
+name: On Release
+
+# By default, a workflow only has read permissions.
+# Add the needed permission to write release assets
+permissions:
+  contents: write
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    name: Add Release Assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./include/task_thread_pool.hpp
+          asset_name: task_thread_pool.hpp
+          asset_content_type: text/plain
