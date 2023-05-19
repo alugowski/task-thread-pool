@@ -20,7 +20,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 3
+#define TASK_THREAD_POOL_VERSION_PATCH 4
 
 #include <condition_variable>
 #include <functional>
@@ -178,20 +178,9 @@ namespace task_thread_pool {
 #endif
             >
         NODISCARD std::future<R> submit(F&& func, A&&... args) {
-            // different implementations for standard and MSVC to work around a MSVC bug.
-#if _MSC_VER
-            // MSVC's std::package_task cannot be moved even though the standard says it should be movable.
-            // The bugfix is waiting for an ABI change to fix.
-            // See https://developercommunity.visualstudio.com/t/unable-to-move-stdpackaged-task-into-any-stl-conta/108672
             std::shared_ptr<std::packaged_task<R()>> ptask = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             submit_detach([ptask] { (*ptask)(); });
             return ptask->get_future();
-#else
-            std::packaged_task<R()> task(std::bind(std::forward<F>(func), std::forward<A>(args)...));
-            std::future<R> f = task.get_future();
-            submit_detach(std::move(task));
-            return f;
-#endif
         }
 
         /**

@@ -110,17 +110,18 @@ If there is an operation you care about feel free to open an issue or submit you
 -------------------------------------------------------------------------------
 Benchmark                                     Time             CPU   Iterations
 -------------------------------------------------------------------------------
-pool_create_destroy                       45857 ns        25694 ns        27657
-submit_detach_packaged_task/paused:1        244 ns          232 ns      3140309
-submit_detach_packaged_task/paused:0        410 ns          336 ns      2085823
-submit_detach_void_lambda/paused:1          217 ns          212 ns      3190389
-submit_detach_void_lambda/paused:0          403 ns          340 ns      2222653
-submit_void_lambda/paused:1                 333 ns          290 ns      2327491
-submit_void_lambda/paused:0                 338 ns          289 ns      2076566
-submit_void_lambda_future/paused:1          342 ns          300 ns      2422933
-submit_void_lambda_future/paused:0          299 ns          258 ns      2677786
-submit_int_lambda_future/paused:1           382 ns          344 ns      2017204
-submit_int_lambda_future/paused:0           744 ns          607 ns      1209817
-run_1k_packaged_tasks                    462047 ns       369652 ns         1864
-run_1k_void_lambdas                      468706 ns       389721 ns         1831
+pool_create_destroy                       46318 ns        26004 ns        26489
+submit_detach_packaged_task/paused:1        254 ns          244 ns      2875157
+submit_detach_packaged_task/paused:0        362 ns          304 ns      2296008
+submit_detach_void_lambda/paused:1          263 ns          260 ns      3072412
+submit_detach_void_lambda/paused:0          418 ns          374 ns      2020779
+submit_void_lambda/paused:1                 399 ns          385 ns      1942879
+submit_void_lambda/paused:0                 667 ns          543 ns      1257161
+submit_void_lambda_future/paused:1          391 ns          376 ns      1897255
+submit_void_lambda_future/paused:0          649 ns          524 ns      1238653
+submit_int_lambda_future/paused:1           395 ns          376 ns      1902789
+submit_int_lambda_future/paused:0           643 ns          518 ns      1146038
+run_1k_packaged_tasks                    462965 ns       362080 ns         1939
+run_1k_void_lambdas                      492022 ns       411069 ns         1712
+run_1k_int_lambdas                       679579 ns       533813 ns         1368
 ```
