@@ -67,9 +67,7 @@ namespace task_thread_pool {
         explicit task_thread_pool(unsigned int num_threads = 0) {
             if (num_threads < 1) {
                 num_threads = std::thread::hardware_concurrency();
-                if (num_threads < 1) {
-                    num_threads = 1;
-                }
+                if (num_threads < 1) { num_threads = 1; }
             }
             start_threads(num_threads);
         }
@@ -255,9 +253,7 @@ namespace task_thread_pool {
                         break;
                     }
 
-                    if (pool_paused || tasks.empty()) {
-                        continue;
-                    }
+                    // Must mean that (pool_paused || tasks.empty()) is true
 
                     task = std::move(tasks.front());
                     tasks.pop();

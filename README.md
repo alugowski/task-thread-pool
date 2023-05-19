@@ -1,4 +1,5 @@
 [![tests](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/alugowski/task_thread_pool/branch/main/graph/badge.svg?token=M9J4azRYyI)](https://codecov.io/gh/alugowski/task_thread_pool)
 
 `task_thread_pool` is a fast and lightweight C++11 thread pool.
 

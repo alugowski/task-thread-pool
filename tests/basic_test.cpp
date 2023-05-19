@@ -70,6 +70,17 @@ TEST_CASE("get-methods", "") {
     }
 }
 
+TEST_CASE("clear_task_queue", "") {
+    task_thread_pool::task_thread_pool pool;
+    pool.pause();
+
+    REQUIRE(pool.get_num_queued_tasks() == 0);
+    pool.submit_detach([&] { });
+    REQUIRE(pool.get_num_queued_tasks() == 1);
+    pool.clear_task_queue();
+    REQUIRE(pool.get_num_queued_tasks() == 0);
+}
+
 //TEST_CASE("set_num_threads", "") {
 //    task_thread_pool::task_thread_pool pool(1);
 //    REQUIRE(pool.get_num_threads() == 1);
@@ -163,8 +174,74 @@ TEST_CASE("future", "") {
     REQUIRE(sum == 100);
 }
 
+TEST_CASE("submit-with-args", "") {
+    std::vector<std::future<int>> futures;
+
+    {
+        task_thread_pool::task_thread_pool pool;
+
+        for (int i = 0; i < 5; ++i) {
+            futures.push_back(pool.submit([](int arg) { return arg; }, i));
+        }
+    }
+    REQUIRE(futures.size() == 5);
+    int sum = 0;
+    for (auto& f : futures) {
+        sum += f.get();
+    }
+    REQUIRE(sum == 10);
+}
+
+TEST_CASE("submit_detach-with-args", "") {
+    std::atomic<int> sum{0};
+
+    {
+        task_thread_pool::task_thread_pool pool;
+
+        for (int i = 0; i < 5; ++i) {
+            pool.submit_detach([&](int arg) { sum += arg; }, i);
+        }
+    }
+    REQUIRE(sum == 10);
+}
+
 TEST_CASE("task-throws", "") {
     task_thread_pool::task_thread_pool pool;
     auto f = pool.submit([]{ throw std::invalid_argument("test"); });
     REQUIRE_THROWS_AS(f.get(), std::invalid_argument);
+}
+
+TEST_CASE("rerun-packaged-task", "") {
+    // std::packaged_task() can only be called once, it throws on subsequent runs.
+    // Ensure this is handled correctly.
+
+    task_thread_pool::task_thread_pool pool{1};
+
+    std::atomic<int> task_run_count{0};
+
+    std::packaged_task<void()> task([&]{ ++task_run_count; });
+
+    // run the task once
+    task();
+
+#if !_MSC_VER
+    // Move the task directly into the queue so that the second (illegal) call of task() will throw directly in the worker thread.
+    pool.submit_detach(std::move(task));
+#else
+    // MSVC's std::package_task cannot be moved even though the standard says it should be movable.
+    // The bugfix is waiting for an ABI change to fix.
+    // See https://developercommunity.visualstudio.com/t/unable-to-move-stdpackaged-task-into-any-stl-conta/108672
+    // This test is therefore simpler on MSVC.
+
+    auto f2 = pool.submit([&]{ task(); });
+    REQUIRE_THROWS_AS(f2.get(), std::future_error);
+#endif
+    pool.wait_for_tasks();
+
+    REQUIRE(task_run_count == 1);
+
+    // verify that the pool still works
+    auto f3 = pool.submit([&]{ ++task_run_count; });
+    REQUIRE_NOTHROW(f3.get());
+    REQUIRE(task_run_count == 2);
 }
