@@ -71,7 +71,7 @@ Use `pool.pause()` to stop workers from starting new tasks. The destructor or `p
 ### Copy
 `task_thread_pool` is a single header file.
 
-You may simply copy [task_thread_pool.hpp](include/task_thread_pool.hpp) into your project or your system `include/`.
+You may simply copy [task_thread_pool.hpp](https://raw.githubusercontent.com/alugowski/task_thread_pool/main/include/task_thread_pool.hpp) into your project or your system `include/`.
 
 ### CMake
 
