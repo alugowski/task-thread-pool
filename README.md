@@ -1,23 +1,17 @@
 [![tests](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/alugowski/task_thread_pool/branch/main/graph/badge.svg?token=M9J4azRYyI)](https://codecov.io/gh/alugowski/task_thread_pool)
 
-`task_thread_pool` is a fast and lightweight C++11 thread pool.
+`task_thread_pool` is a fast and lightweight thread pool for C++11 and newer.
 
-Use this to easily add parallelism to your project without introducing heavy dependencies.
+Easily add parallelism to your project without introducing heavy dependencies.
 
-### Strengths
 * Single header file and permissive license means easy integration
-* Automated testing on all major platforms and compilers
+* Tested on all major platforms and compilers
   * Linux, macOS, Windows
   * GCC, Clang, MSVC
-  * C++11 through C++23
+  * C++11, C++14, C++17, C++20, C++23
 * Comprehensive test suite, including stress tests
 * Benchmarks help confirm good performance
-
-### Weaknesses
-If you need to parallelize some `for` loops, use OpenMP instead.
-
-If you have many tiny tasks, or you have many physical cores, use a more heavy-duty executor like those in Threading Building Blocks.
 
 # Usage
 
@@ -27,30 +21,26 @@ If you have many tiny tasks, or you have many physical cores, use a more heavy-d
 
 ### Create pool
 
-Create a pool with thread count equal to number of physical cores on the machine:
 ```c++
-task_thread_pool::task_thread_pool pool;
-```
-
-You may also specify the number of worker threads:
-
-```c++
-task_thread_pool::task_thread_pool pool{4};
+task_thread_pool::task_thread_pool pool; // num_threads == number of physical cores
+// or
+task_thread_pool::task_thread_pool pool{4}; // num_threads = 4
 ```
 
 ### Submit tasks
-Submit any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable) and its arguments (if any). A Callable can be a function, a lambda, `std::packaged_task`, `std::function`, etc.
+Submit a function, a lambda, `std::packaged_task`, `std::function`, or any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable), and its arguments (if any).
+```c++
+pool.submit_detach([](int arg) { /* some work */ }, 123456);
+```
 
-This returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future) for tracking the execution of this task. Use `get()` on this future to wait for the task to complete and get its return value (or thrown exception).
+If your task returns a value (or throws an exception that you care about), then `submit()` returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future)
+for tracking the task:
+
+Use `get()` on this future to wait for the task to complete and get its return value (or thrown exception):
 ```c++
 std::future<int> future = pool.submit([] { return 1; });
 
 int result = future.get(); // returns 1
-```
-
-If you do not care about the `std::future` then use `submit_detach()` instead:
-```c++
-pool.submit_detach([] { /* some work */ });
 ```
 
 ### Waiting for tasks
@@ -59,6 +49,8 @@ pool.submit_detach([] { /* some work */ });
 pool.wait_for_tasks();
 ```
 blocks the calling thread until all tasks have been completed.
+
+If you only wish to wait for a particular task, use the `std::future` returned by `submit()`.
 
 ### Pausing
 
@@ -94,7 +86,7 @@ Use `GIT_TAG main` to always use the latest version, or replace `main` with a ve
 
 # How it works
 
-Given that simplicity is a major goal, this thread pool does what you'd expect. Submitted tasks are added to a queue
+Simplicity is a major goal so this thread pool does what you'd expect. Submitted tasks are added to a queue
 and worker threads pull from this queue.
 
 Care is taken that this process is efficient. The `submit` methods are optimized to only do what they need. Worker threads only lock the queue once per task. Excess synchronization is avoided.
