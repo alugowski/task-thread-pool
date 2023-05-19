@@ -252,7 +252,7 @@ namespace task_thread_pool {
                         break;
                     }
 
-                    // Must mean that (pool_paused || tasks.empty()) is true
+                    // Must mean that (!pool_paused && !tasks.empty()) is true
 
                     task = std::move(tasks.front());
                     tasks.pop();
