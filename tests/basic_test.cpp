@@ -81,24 +81,6 @@ TEST_CASE("clear_task_queue", "") {
     REQUIRE(pool.get_num_queued_tasks() == 0);
 }
 
-//TEST_CASE("set_num_threads", "") {
-//    task_thread_pool::task_thread_pool pool(1);
-//    REQUIRE(pool.get_num_threads() == 1);
-//
-//    pool.set_num_threads(1);
-//    REQUIRE(pool.get_num_threads() == 1);
-//
-//    pool.set_num_threads(0);
-//    REQUIRE(pool.get_num_threads() == 0);
-//
-//    std::vector<int> num_threads_targets = {1, 4, 1, 5};
-//    for (unsigned int num_threads : num_threads_targets) {
-//        pool.set_num_threads(num_threads);
-//        REQUIRE(pool.get_num_threads() == num_threads);
-//        REQUIRE(measure_number_of_threads(pool) == num_threads);
-//    }
-//}
-
 
 TEST_CASE("sum", "") {
     std::atomic<int> count{0};

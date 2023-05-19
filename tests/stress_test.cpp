@@ -49,20 +49,3 @@ TEST_CASE("constructor", "[stress]") {
     }
 }
 
-//TEST_CASE("set_num_threads scale-up", "[stress]") {
-//    for (int i = 0; i < REPEATS; ++i) {
-//        task_thread_pool::task_thread_pool pool(1);
-//        pool.set_num_threads(4);
-//        REQUIRE(pool.get_num_threads() == 4);
-//        REQUIRE(measure_number_of_threads(pool) == 4);
-//    }
-//}
-//
-//TEST_CASE("set_num_threads scale-down", "[stress]") {
-//    for (int i = 0; i < REPEATS; ++i) {
-//        task_thread_pool::task_thread_pool pool(4);
-//        pool.set_num_threads(1);
-//        REQUIRE(pool.get_num_threads() == 1);
-//        REQUIRE(measure_number_of_threads(pool) == 1);
-//    }
-//}

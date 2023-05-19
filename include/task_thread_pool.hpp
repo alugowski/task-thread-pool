@@ -244,7 +244,6 @@ namespace task_thread_pool {
                         if (notify_task_finish) {
                             task_finished_cv.notify_all();
                         }
-                        finished_task = false;
                     }
 
                     task_cv.wait(tasks_lock, [&]() { return !pool_running || (!pool_paused && !tasks.empty()); });
