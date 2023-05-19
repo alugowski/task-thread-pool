@@ -1,10 +1,13 @@
 [![tests](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/alugowski/task_thread_pool/branch/main/graph/badge.svg?token=M9J4azRYyI)](https://codecov.io/gh/alugowski/task_thread_pool)
+[![License](https://img.shields.io/badge/License-BSD_2--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+[![License](https://img.shields.io/badge/License-Boost_1.0-lightblue.svg)](https://www.boost.org/LICENSE_1_0.txt)
 
 `task_thread_pool` is a fast and lightweight thread pool for C++11 and newer.
 
 Easily add parallelism to your project without introducing heavy dependencies.
 
+* Easy to use
 * Single header file and permissive license means easy integration
 * Tested on all major platforms and compilers
   * Linux, macOS, Windows
@@ -19,10 +22,8 @@ Easily add parallelism to your project without introducing heavy dependencies.
 #include <task_thread_pool.hpp>
 ```
 
-### Create pool
-
 ```c++
-task_thread_pool::task_thread_pool pool; // num_threads == number of physical cores
+task_thread_pool::task_thread_pool pool; // num_threads = number of physical cores
 // or
 task_thread_pool::task_thread_pool pool{4}; // num_threads = 4
 ```
