@@ -31,7 +31,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 4
+#define TASK_THREAD_POOL_VERSION_PATCH 5
 
 #include <condition_variable>
 #include <functional>
@@ -61,7 +61,7 @@ namespace task_thread_pool {
     /**
      * A reimplementation of std::decay_t, which is only available since C++14.
      */
-    template< class T >
+    template <class T>
     using decay_t = typename std::decay<T>::type;
 #endif
 
@@ -245,30 +245,27 @@ namespace task_thread_pool {
             bool finished_task = false;
 
             while (true) {
-                std::packaged_task<void()> task;
+                std::unique_lock<std::mutex> tasks_lock(task_mutex);
 
-                {
-                    std::unique_lock<std::mutex> tasks_lock(task_mutex);
-
-                    if (finished_task) {
-                        --num_inflight_tasks;
-                        if (notify_task_finish) {
-                            task_finished_cv.notify_all();
-                        }
+                if (finished_task) {
+                    --num_inflight_tasks;
+                    if (notify_task_finish) {
+                        task_finished_cv.notify_all();
                     }
-
-                    task_cv.wait(tasks_lock, [&]() { return !pool_running || (!pool_paused && !tasks.empty()); });
-
-                    if (!pool_running) {
-                        break;
-                    }
-
-                    // Must mean that (!pool_paused && !tasks.empty()) is true
-
-                    task = std::move(tasks.front());
-                    tasks.pop();
-                    ++num_inflight_tasks;
                 }
+
+                task_cv.wait(tasks_lock, [&]() { return !pool_running || (!pool_paused && !tasks.empty()); });
+
+                if (!pool_running) {
+                    break;
+                }
+
+                // Must mean that (!pool_paused && !tasks.empty()) is true
+
+                std::packaged_task<void()> task{std::move(tasks.front())};
+                tasks.pop();
+                ++num_inflight_tasks;
+                tasks_lock.unlock();
 
                 try {
                     task();
