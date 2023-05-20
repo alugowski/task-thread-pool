@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-2-Clause OR BSL-1.0
 /**
  * @brief A fast and lightweight C++11 thread pool.
- * @see https://github.com/alugowski/task_thread_pool
+ * @see https://github.com/alugowski/task-thread-pool
  * @author Adam Lugowski
  * @copyright Copyright (C) 2023 Adam Lugowski. Licensed under the BSD-2-Clause license or the Boost Software License.
  *
@@ -31,7 +31,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 5
+#define TASK_THREAD_POOL_VERSION_PATCH 6
 
 #include <condition_variable>
 #include <functional>

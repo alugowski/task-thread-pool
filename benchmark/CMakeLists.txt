@@ -24,4 +24,4 @@ FetchContent_MakeAvailable(googlebenchmark)
 
 
 add_executable(task_thread_pool_bench task_thread_pool_bench.cpp)
-target_link_libraries(task_thread_pool_bench benchmark::benchmark task_thread_pool::task_thread_pool)
+target_link_libraries(task_thread_pool_bench benchmark::benchmark task-thread-pool::task-thread-pool)

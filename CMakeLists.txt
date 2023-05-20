@@ -9,12 +9,11 @@ string(REGEX MATCH "[0-9]+" TP_MINOR ${VERSION_MINOR_STR})
 string(REGEX MATCH "[0-9]+" TP_PATCH ${VERSION_PATCH_STR})
 
 project(task_thread_pool VERSION "${TP_MAJOR}.${TP_MINOR}.${TP_PATCH}" LANGUAGES CXX)
-message("task_thread_pool version ${PROJECT_VERSION}")
 
 # Main
 add_library(task_thread_pool INTERFACE)
 # add alias so the project can be used with add_subdirectory
-add_library(task_thread_pool::task_thread_pool ALIAS task_thread_pool)
+add_library(task-thread-pool::task-thread-pool ALIAS task_thread_pool)
 
 target_include_directories(
         task_thread_pool INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

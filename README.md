@@ -1,15 +1,15 @@
-[![tests](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task_thread_pool/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/alugowski/task_thread_pool/branch/main/graph/badge.svg?token=M9J4azRYyI)](https://codecov.io/gh/alugowski/task_thread_pool)
-![File size in bytes](https://img.shields.io/github/size/alugowski/task_thread_pool/include/task_thread_pool.hpp)
+[![tests](https://github.com/alugowski/task-thread-pool/actions/workflows/tests.yml/badge.svg)](https://github.com/alugowski/task-thread-pool/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/alugowski/task-thread-pool/branch/main/graph/badge.svg?token=M9J4azRYyI)](https://codecov.io/gh/alugowski/task-thread-pool)
+![File size in bytes](https://img.shields.io/github/size/alugowski/task-thread-pool/include/task_thread_pool.hpp)
 [![License](https://img.shields.io/badge/License-BSD_2--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 [![License](https://img.shields.io/badge/License-Boost_1.0-lightblue.svg)](https://www.boost.org/LICENSE_1_0.txt)
 
-`task_thread_pool` is a fast and lightweight thread pool for C++11 and newer.
+`task-thread-pool` is a fast and lightweight thread pool for C++11 and newer.
 
 Easily add parallelism to your project without introducing heavy dependencies.
 
-* Easy to use
-* [Single header file](https://raw.githubusercontent.com/alugowski/task_thread_pool/main/include/task_thread_pool.hpp) and permissive license means easy integration
+* Focus on correctness, ease of use, simplicity, performance.
+* [Single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive license means easy integration
 * Tested on all major platforms and compilers
   * Linux, macOS, Windows
   * GCC, Clang, MSVC
@@ -63,9 +63,9 @@ Use `pool.pause()` to stop workers from starting new tasks. The destructor or `p
 
 
 ### Copy
-`task_thread_pool` is a single header file.
+`task-thread-pool` is a single header file.
 
-You may simply copy [task_thread_pool.hpp](https://raw.githubusercontent.com/alugowski/task_thread_pool/main/include/task_thread_pool.hpp) into your project or your system `include/`.
+You may simply copy [task_thread_pool.hpp](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) into your project or your system `include/`.
 
 ### CMake
 
@@ -73,14 +73,14 @@ You may use CMake to fetch directly from GitHub:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(
-        task_thread_pool
-        GIT_REPOSITORY https://github.com/alugowski/task_thread_pool
+        task-thread-pool
+        GIT_REPOSITORY https://github.com/alugowski/task-thread-pool
         GIT_TAG main
         GIT_SHALLOW TRUE
 )
-FetchContent_MakeAvailable(task_thread_pool)
+FetchContent_MakeAvailable(task-thread-pool)
 
-target_link_libraries(YOUR_TARGET task_thread_pool::task_thread_pool)
+target_link_libraries(YOUR_TARGET task-thread-pool::task-thread-pool)
 ```
 
 Use `GIT_TAG main` to always use the latest version, or replace `main` with a version number to pin a fixed version.

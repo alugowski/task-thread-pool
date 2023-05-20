@@ -28,10 +28,10 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(functionality_tests basic_test.cpp)
-target_link_libraries(functionality_tests PRIVATE Catch2::Catch2WithMain task_thread_pool::task_thread_pool)
+target_link_libraries(functionality_tests PRIVATE Catch2::Catch2WithMain task-thread-pool::task-thread-pool)
 
 add_executable(stress_tests stress_test.cpp)
-target_link_libraries(stress_tests PRIVATE Catch2::Catch2WithMain task_thread_pool::task_thread_pool)
+target_link_libraries(stress_tests PRIVATE Catch2::Catch2WithMain task-thread-pool::task-thread-pool)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
