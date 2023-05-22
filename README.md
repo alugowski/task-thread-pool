@@ -30,34 +30,84 @@ task_thread_pool::task_thread_pool pool; // num_threads = number of physical cor
 task_thread_pool::task_thread_pool pool{4}; // num_threads = 4
 ```
 
-### Submit tasks
 Submit a function, a lambda, `std::packaged_task`, `std::function`, or any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable), and its arguments (if any).
 ```c++
-pool.submit_detach([](int arg) { /* some work */ }, 123456);
+pool.submit_detach( [](int arg) { /* some work */ }, 123456 );
 ```
 
-If your task returns a value (or throws an exception that you care about), then `submit()` returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future)
+If your task returns a value (or throws an exception you wish to catch), then `submit()` returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future)
 for tracking the task:
 
-Use `get()` on this future to wait for the task to complete and get its return value (or thrown exception):
 ```c++
 std::future<int> future = pool.submit([] { return 1; });
 
 int result = future.get(); // returns 1
 ```
+`std::future::get()` waits for the task to complete.
 
-### Waiting for tasks
-
+To wait for all tasks to complete:
 ```c++
 pool.wait_for_tasks();
 ```
-blocks the calling thread until all tasks have been completed.
 
-If you only wish to wait for a particular task, use the `std::future` returned by `submit()`.
+# Example
 
-### Pausing
+```c++
+#include <iostream>
+// Use #include "task_thread_pool.hpp" for relative path,
+// and #include <task_thread_pool.hpp> if installed in include path
+#include "task_thread_pool.hpp"
 
-Use `pool.pause()` to stop workers from starting new tasks. The destructor or `pool.unpause()` resume execution.
+int sum(int a, int b) { return a + b; }
+
+int main() {
+    // Create a thread pool. The number of threads is equal to the number of cores in the system,
+    // as given by std::thread::hardware_concurrency().
+    // You can also specify the number of threads, like so: pool(4)
+    task_thread_pool::task_thread_pool pool;
+
+    // Submit a task that returns a value.
+    std::future<int> one_future = pool.submit([] { return 1; });
+    // Use std::future::get() to wait for the task to complete and return the value.
+    std::cout << "Task returned: " << one_future.get() << std::endl;
+
+    // Tasks may have arguments:
+    std::future<int> sum_future = pool.submit(&sum, 1, 2);
+    std::cout << "Sum = " << sum_future.get() << std::endl;
+
+    // Submit a task that we don't need to track the execution of:
+    pool.submit_detach([](int arg) {
+        std::cout << "The argument is: " << arg << std::endl;
+        }, 42);
+
+    // Wait for all tasks to complete:
+    pool.wait_for_tasks();
+
+    // The pool can be paused:
+    pool.pause();
+
+    std::future<void> paused_future = pool.submit([]{
+        std::cout << "Paused task executes" << std::endl;
+    });
+
+    // prints 1
+    std::cout << "Number of tasks in the pool: " << pool.get_num_tasks() << std::endl;
+    pool.unpause();
+
+    // wait for the task to finish
+    paused_future.get();
+
+    // prints 0
+    std::cout << "Number of tasks in the pool: " << pool.get_num_tasks() << std::endl;
+
+    // All queued tasks are executed before the pool is destroyed:
+    pool.submit_detach([]{
+        std::cout << "One last task" << std::endl;
+    });
+
+    return 0;
+}
+```
 
 
 # Installation
