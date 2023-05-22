@@ -3,13 +3,14 @@
 ![File size in bytes](https://img.shields.io/github/size/alugowski/task-thread-pool/include/task_thread_pool.hpp)
 [![License](https://img.shields.io/badge/License-BSD_2--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 [![License](https://img.shields.io/badge/License-Boost_1.0-lightblue.svg)](https://www.boost.org/LICENSE_1_0.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 `task-thread-pool` is a fast and lightweight thread pool for C++11 and newer.
 
 Easily add parallelism to your project without introducing heavy dependencies.
 
 * Focus on correctness, ease of use, simplicity, performance.
-* [Single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive license means easy integration
+* Small [Single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive licensing means easy integration
 * Tested on all major platforms and compilers
   * Linux, macOS, Windows
   * GCC, Clang, MSVC

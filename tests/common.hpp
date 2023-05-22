@@ -1,5 +1,6 @@
 // Copyright (C) 2023 Adam Lugowski. All rights reserved.
-// Use of this source code is governed by the BSD 2-clause license found in the LICENSE.txt file.
+// Use of this source code is governed by the BSD 2-clause license, the MIT license, or at your choosing the BSL-1.0 license found in the LICENSE.*.txt files.
+// SPDX-License-Identifier: BSD-2-Clause OR MIT OR BSL-1.0
 
 #include <task_thread_pool.hpp>
 
