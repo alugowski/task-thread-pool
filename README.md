@@ -145,6 +145,11 @@ target_link_libraries(YOUR_TARGET task-thread-pool::task-thread-pool)
 
 Use `GIT_TAG main` to always use the latest version, or replace `main` with a version number to pin a fixed version.
 
+### vcpkg
+
+```
+vcpkg install task-thread-pool
+```
 
 # How it works
 
