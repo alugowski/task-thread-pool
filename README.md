@@ -66,40 +66,49 @@ int main() {
     // You can also specify the number of threads, like so: pool(4)
     task_thread_pool::task_thread_pool pool;
 
+    //---------------------------------------------
     // Submit a task that returns a value.
     std::future<int> one_future = pool.submit([] { return 1; });
     // Use std::future::get() to wait for the task to complete and return the value.
     std::cout << "Task returned: " << one_future.get() << std::endl;
 
+    //---------------------------------------------
     // Tasks may have arguments:
     std::future<int> sum_future = pool.submit(&sum, 1, 2);
     std::cout << "Sum = " << sum_future.get() << std::endl;
 
+    //---------------------------------------------
     // Submit a task that we don't need to track the execution of:
     pool.submit_detach([](int arg) {
         std::cout << "The argument is: " << arg << std::endl;
-        }, 42);
+    }, 42);
 
+    //---------------------------------------------
     // Wait for all tasks to complete:
     pool.wait_for_tasks();
 
+    //---------------------------------------------
     // The pool can be paused:
     pool.pause();
 
-    std::future<void> paused_future = pool.submit([]{
+    // Submit a task that won't be started until the pool is unpaused.
+    std::future<void> paused_future = pool.submit([] {
         std::cout << "Paused task executes" << std::endl;
     });
 
     // prints 1
     std::cout << "Number of tasks in the pool: " << pool.get_num_tasks() << std::endl;
+    
+    // Resume executing queued tasks.
     pool.unpause();
 
-    // wait for the task to finish
+    // Wait for the task to finish.
     paused_future.get();
 
     // prints 0
     std::cout << "Number of tasks in the pool: " << pool.get_num_tasks() << std::endl;
 
+    //---------------------------------------------
     // All queued tasks are executed before the pool is destroyed:
     pool.submit_detach([]{
         std::cout << "One last task" << std::endl;
