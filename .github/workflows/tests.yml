@@ -14,10 +14,6 @@ jobs:
         # Ubuntu uses GCC, macOS uses Clang, Windows uses MSVC
         os: [ubuntu-latest, macos-latest, windows-latest]
         cppstd: [11, 14, 17, 20, 23]
-#        exclude:
-#          # MSVC does not have c++23 support yet. See https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=msvc-170
-#          - os: windows-latest
-#            cppstd: 23
 
     steps:
       - uses: actions/checkout@v3
