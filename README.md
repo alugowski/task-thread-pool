@@ -10,13 +10,13 @@
 Easily add parallelism to your project without introducing heavy dependencies.
 
 * Focus on correctness, ease of use, simplicity, performance.
-* Small [Single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive licensing means easy integration
-* Tested on all major platforms and compilers
+* [Small single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive licensing means easy integration.
+* Tested on all major platforms and compilers:
   * Linux, macOS, Windows
   * GCC, Clang, MSVC
   * C++11, C++14, C++17, C++20, C++23
-* Comprehensive test suite, including stress tests
-* Benchmarks help confirm good performance
+* Comprehensive test suite, including stress tests.
+* Benchmarks help confirm good performance.
 
 # Usage
 
@@ -32,7 +32,7 @@ task_thread_pool::task_thread_pool pool{4}; // num_threads = 4
 
 Submit a function, a lambda, `std::packaged_task`, `std::function`, or any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable), and its arguments (if any).
 ```c++
-pool.submit_detach( [](int arg) { /* some work */ }, 123456 );
+pool.submit_detach( [](int arg) { std::cout << arg; }, 123456 );
 ```
 
 If your task returns a value (or throws an exception you wish to catch), then `submit()` returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future)
@@ -63,7 +63,8 @@ int sum(int a, int b) { return a + b; }
 int main() {
     // Create a thread pool. The number of threads is equal to the number of cores in the system,
     // as given by std::thread::hardware_concurrency().
-    // You can also specify the number of threads, like so: pool(4)
+    // You can also specify the number of threads, like so: pool(4),
+    // or resize the thread pool later using pool.set_num_threads(4).
     task_thread_pool::task_thread_pool pool;
 
     //---------------------------------------------
