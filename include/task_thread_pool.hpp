@@ -109,9 +109,9 @@
 #endif
 
 #if TTP_CXX17
-#define NODISCARD [[nodiscard]]
+#define TTP_NODISCARD [[nodiscard]]
 #else
-#define NODISCARD
+#define TTP_NODISCARD
 #endif
 
 namespace task_thread_pool {
@@ -167,7 +167,7 @@ namespace task_thread_pool {
          *
          * @return Number of tasks that have been enqueued but not yet started.
          */
-        NODISCARD size_t get_num_queued_tasks() const {
+        TTP_NODISCARD size_t get_num_queued_tasks() const {
             const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return tasks.size();
         }
@@ -177,7 +177,7 @@ namespace task_thread_pool {
          *
          * @return Approximate number of tasks currently being processed by worker threads.
          */
-        NODISCARD size_t get_num_running_tasks() const {
+        TTP_NODISCARD size_t get_num_running_tasks() const {
             const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return num_inflight_tasks;
         }
@@ -187,7 +187,7 @@ namespace task_thread_pool {
          *
          * @return Approximate number of tasks both enqueued and running.
          */
-        NODISCARD size_t get_num_tasks() const {
+        TTP_NODISCARD size_t get_num_tasks() const {
             const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return tasks.size() + num_inflight_tasks;
         }
@@ -197,7 +197,7 @@ namespace task_thread_pool {
          *
          * @return Number of worker threads.
          */
-        NODISCARD unsigned int get_num_threads() const {
+        TTP_NODISCARD unsigned int get_num_threads() const {
             const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
             return static_cast<unsigned int>(threads.size());
         }
@@ -254,7 +254,7 @@ namespace task_thread_pool {
          *
          * @return true if pause() has been called without an intervening unpause().
          */
-        NODISCARD bool is_paused() const {
+        TTP_NODISCARD bool is_paused() const {
             const std::lock_guard<std::mutex> tasks_lock(task_mutex);
             return pool_paused;
         }
@@ -273,7 +273,7 @@ namespace task_thread_pool {
             typename R = typename std::result_of<decay_t<F>(decay_t<A>...)>::type
 #endif
             >
-        NODISCARD std::future<R> submit(F&& func, A&&... args) {
+        TTP_NODISCARD std::future<R> submit(F&& func, A&&... args) {
             std::shared_ptr<std::packaged_task<R()>> ptask = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             submit_detach([ptask] { (*ptask)(); });
             return ptask->get_future();
@@ -463,7 +463,7 @@ namespace task_thread_pool {
 }
 
 // clean up
-#undef NODISCARD
+#undef TTP_NODISCARD
 #undef TTP_CXX17
 
 #endif
