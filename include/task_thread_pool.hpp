@@ -90,7 +90,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 7
+#define TASK_THREAD_POOL_VERSION_PATCH 8
 
 #include <condition_variable>
 #include <functional>
@@ -198,8 +198,36 @@ namespace task_thread_pool {
          * @return Number of worker threads.
          */
         NODISCARD unsigned int get_num_threads() const {
-            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
+            const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
             return static_cast<unsigned int>(threads.size());
+        }
+
+        /**
+         * Set number of worker threads. Will start or stop worker threads as necessary.
+         *
+         * @param num_threads Number of worker threads. If 0 then number of threads is equal to the number of physical cores on the machine, as given by std::thread::hardware_concurrency().
+         * @return Previous number of worker threads.
+         */
+        unsigned int set_num_threads(unsigned int num_threads) {
+            const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
+            unsigned int previous_num_threads = get_num_threads();
+
+            if (num_threads < 1) {
+                num_threads = std::thread::hardware_concurrency();
+                if (num_threads < 1) { num_threads = 1; }
+            }
+
+            if (previous_num_threads <= num_threads) {
+                // expanding the thread pool
+                start_threads(num_threads - previous_num_threads);
+            } else {
+                // contracting the thread pool
+                stop_all_threads();
+                pool_running = true;
+                start_threads(num_threads);
+            }
+
+            return previous_num_threads;
         }
 
         /**
@@ -343,7 +371,7 @@ namespace task_thread_pool {
          * @param num_threads How many threads to start.
          */
         void start_threads(const unsigned int num_threads) {
-            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
+            const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
 
             for (unsigned int i = 0; i < num_threads; ++i) {
                 threads.emplace_back(&task_thread_pool::worker_main, this);
@@ -354,7 +382,7 @@ namespace task_thread_pool {
          * Stop, join, and destroy all worker threads.
          */
         void stop_all_threads() {
-            const std::lock_guard<std::mutex> threads_lock(thread_mutex);
+            const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
 
             pool_running = false;
 
@@ -379,7 +407,7 @@ namespace task_thread_pool {
         /**
          * A mutex for methods that start/stop threads.
          */
-        mutable std::mutex thread_mutex;
+        mutable std::recursive_mutex thread_mutex;
 
         /**
          * The task queue.

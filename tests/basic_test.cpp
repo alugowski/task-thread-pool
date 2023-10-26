@@ -32,6 +32,22 @@ TEST_CASE("get_thread_count", "") {
     }
 }
 
+TEST_CASE("set_thread_count", "") {
+    for (unsigned int init_threads : {1, 4, 100}) {
+        task_thread_pool::task_thread_pool pool(init_threads);
+        for (unsigned int num_threads : {1, 4, 100}) {
+            pool.set_num_threads(num_threads);
+            REQUIRE(pool.get_num_threads() == num_threads);
+            REQUIRE(measure_number_of_threads(pool) == num_threads);
+        }
+    }
+    {
+        task_thread_pool::task_thread_pool pool(23);
+        pool.set_num_threads(0);
+        REQUIRE(pool.get_num_threads() == std::thread::hardware_concurrency());
+    }
+}
+
 TEST_CASE("get-methods", "") {
     {
         task_thread_pool::task_thread_pool pool;
