@@ -13,7 +13,8 @@ Easily add parallelism to your project without introducing heavy dependencies.
 * [Small single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive licensing means easy integration.
 * Tested on all major platforms and compilers:
   * Linux, macOS, Windows
-  * GCC, Clang, MSVC
+  * GCC, LLVM/Clang, MSVC
+    * CI tests on GCC 7+ and LLVM 5+, should work on older
   * C++11, C++14, C++17, C++20, C++23
 * Comprehensive test suite, including stress tests.
 * Benchmarks help confirm good performance.
@@ -151,6 +152,9 @@ Use `GIT_TAG main` to always use the latest version, or replace `main` with a ve
 ```
 vcpkg install task-thread-pool
 ```
+
+### Note for Clang and GCC <9 users
+Some compilers, including non-Apple Clang and GCC 8 and older, require the `-lpthread` linker flag to use C++11 threads. The above CMake instructions will do that automatically.
 
 # How it works
 
