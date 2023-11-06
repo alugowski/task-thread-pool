@@ -30,6 +30,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}"
 # This library is compatible with C++11 and newer.
 target_compile_features(task_thread_pool INTERFACE cxx_std_11)
 
+# Some older compilers (eg. Clang, GCC <9) require extra link flags for C++11 threads
+find_package(Threads)
+target_link_libraries(task_thread_pool INTERFACE Threads::Threads)
 
 ###############################################
 

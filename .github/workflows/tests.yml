@@ -6,27 +6,67 @@ on:
 
 jobs:
   build:
-    name: ${{matrix.os}} - C++${{matrix.cppstd}}
+    name: ${{matrix.os}} ${{ matrix.description }} (C++ ${{ matrix.cppstd }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        # Ubuntu uses GCC, macOS uses Clang, Windows uses MSVC
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        cppstd: [11, 14, 17, 20, 23]
+        include:
+          - os: ubuntu-20.04
+            # oldest LLVM that the install-llvm-action action is able to install
+            llvm-version: "5"
+            description: "LLVM 5"
+            cppstd: "11 14 17"
+
+          - os: ubuntu-20.04
+            # oldest GCC that the setup-gcc action is able to install
+            gcc-version: "7"
+            description: "GCC 7"
+            cppstd: "11 14"
+
+          - os: ubuntu-latest
+            gcc-version: "13"
+            description: "GCC 13"
+            cppstd: "11 14 17 20 23"
+
+          - os: macos-latest
+            # uses Apple Clang
+            cppstd: "11 14 17 20 23"
+
+          - os: windows-latest
+            # uses MSVC
+            cppstd: "11 14 17 20 23"
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build
-        run: |
-          cmake -S . -B build -DCMAKE_CXX_STANDARD=${{ matrix.cppstd }} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DTASK_THREAD_POOL_TEST=ON -DTASK_THREAD_POOL_TEST_COVERAGE=ON -DTASK_THREAD_POOL_BENCH=ON
-          cmake --build build --config Debug
+      - name: Setup GCC
+        uses: egor-tensin/setup-gcc@v1
+        if: ${{ matrix.gcc-version != '' }}
+        with:
+          version: ${{ matrix.gcc-version }}
 
-      - name: Test
+      - name: Setup LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        if: ${{ matrix.llvm-version != '' }}
+        with:
+          version: ${{ matrix.llvm-version }}
+          env: true
+
+      - name: Build and Test
         run: |
-          cd build/tests
-          ctest -C Debug --output-on-failure --verbose
+          for cppstd in ${{ matrix.cppstd }}; do
+            echo ""
+            echo ""
+            echo "Testing C++${cppstd}"
+            BUILD="build-cpp${cppstd}"
+            cmake -S . -B $BUILD -DCMAKE_CXX_STANDARD=${cppstd} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DTASK_THREAD_POOL_TEST=ON -DTASK_THREAD_POOL_TEST_COVERAGE=ON -DTASK_THREAD_POOL_BENCH=ON
+            cmake --build $BUILD --config Debug
+            cd $BUILD/tests
+            ctest -C Debug --output-on-failure --verbose
+            cd ../..
+          done
+        shell: bash
 
       - name: Upload Coverage to Codecov
         if: contains(matrix.os, 'ubuntu')
