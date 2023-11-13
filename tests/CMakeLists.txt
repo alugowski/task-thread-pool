@@ -29,9 +29,11 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(functionality_tests basic_test.cpp)
 target_link_libraries(functionality_tests PRIVATE Catch2::Catch2WithMain task-thread-pool::task-thread-pool)
+target_compile_definitions(functionality_tests PUBLIC CATCH_CONFIG_FAST_COMPILE)
 
 add_executable(stress_tests stress_test.cpp)
 target_link_libraries(stress_tests PRIVATE Catch2::Catch2WithMain task-thread-pool::task-thread-pool)
+target_compile_definitions(stress_tests PUBLIC CATCH_CONFIG_FAST_COMPILE)
 
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(CTest)
