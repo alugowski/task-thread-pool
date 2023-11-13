@@ -31,6 +31,7 @@ jobs:
 
           - os: ubuntu-latest
             # default GCC, which has gcov
+            cppstd: "11 14 17 20 23"
 
           - os: macos-latest
             # uses Apple Clang
