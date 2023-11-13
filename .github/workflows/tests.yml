@@ -29,6 +29,9 @@ jobs:
             description: "GCC 13"
             cppstd: "11 14 17 20 23"
 
+          - os: ubuntu-latest
+            # default GCC, which has gcov
+
           - os: macos-latest
             # uses Apple Clang
             cppstd: "11 14 17 20 23"
