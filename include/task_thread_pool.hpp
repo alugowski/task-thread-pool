@@ -90,7 +90,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 8
+#define TASK_THREAD_POOL_VERSION_PATCH 9
 
 #include <condition_variable>
 #include <functional>
@@ -132,7 +132,8 @@ namespace task_thread_pool {
         /**
          * Create a task_thread_pool and start worker threads.
          *
-         * @param num_threads Number of worker threads. If 0 then number of threads is equal to the number of physical cores on the machine, as given by std::thread::hardware_concurrency().
+         * @param num_threads Number of worker threads. If 0 then number of threads is equal to the
+         *                    number of physical cores on the machine, as given by std::thread::hardware_concurrency().
          */
         explicit task_thread_pool(unsigned int num_threads = 0) {
             if (num_threads < 1) {
@@ -205,7 +206,8 @@ namespace task_thread_pool {
         /**
          * Set number of worker threads. Will start or stop worker threads as necessary.
          *
-         * @param num_threads Number of worker threads. If 0 then number of threads is equal to the number of physical cores on the machine, as given by std::thread::hardware_concurrency().
+         * @param num_threads Number of worker threads. If 0 then number of threads is equal to the
+         *                    number of physical cores on the machine, as given by std::thread::hardware_concurrency().
          * @return Previous number of worker threads.
          */
         unsigned int set_num_threads(unsigned int num_threads) {
@@ -223,7 +225,10 @@ namespace task_thread_pool {
             } else {
                 // contracting the thread pool
                 stop_all_threads();
-                pool_running = true;
+                {
+                    const std::lock_guard<std::mutex> tasks_lock(task_mutex);
+                    pool_running = true;
+                }
                 start_threads(num_threads);
             }
 
@@ -274,7 +279,8 @@ namespace task_thread_pool {
 #endif
             >
         TTP_NODISCARD std::future<R> submit(F&& func, A&&... args) {
-            std::shared_ptr<std::packaged_task<R()>> ptask = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
+            std::shared_ptr<std::packaged_task<R()>> ptask =
+                std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             submit_detach([ptask] { (*ptask)(); });
             return ptask->get_future();
         }
@@ -384,15 +390,16 @@ namespace task_thread_pool {
         void stop_all_threads() {
             const std::lock_guard<std::recursive_mutex> threads_lock(thread_mutex);
 
-            pool_running = false;
-
             {
                 const std::lock_guard<std::mutex> tasks_lock(task_mutex);
+                pool_running = false;
                 task_cv.notify_all();
             }
 
             for (auto& thread : threads) {
-                thread.join();
+                if (thread.joinable()) {
+                    thread.join();
+                }
             }
             threads.clear();
         }
