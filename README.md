@@ -31,13 +31,13 @@ task_thread_pool::task_thread_pool pool; // num_threads = number of physical cor
 task_thread_pool::task_thread_pool pool{4}; // num_threads = 4
 ```
 
-Submit a function, a lambda, `std::packaged_task`, `std::function`, or any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable), and its arguments (if any).
+Submit a function, a lambda, `std::packaged_task`, `std::function`, or any [*Callable*](https://en.cppreference.com/w/cpp/named_req/Callable), and its arguments:
+
 ```c++
 pool.submit_detach( [](int arg) { std::cout << arg; }, 123456 );
 ```
 
-If your task returns a value (or throws an exception you wish to catch), then `submit()` returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future)
-for tracking the task:
+To track task return values (and thrown exceptions), use `submit()` which returns an [`std::future`](https://en.cppreference.com/w/cpp/thread/future):
 
 ```c++
 std::future<int> future = pool.submit([] { return 1; });
@@ -54,6 +54,8 @@ pool.wait_for_tasks();
 ## Parallel Loops and More
 
 Use [poolSTL](https://github.com/alugowski/poolSTL) to parallelize loops, transforms, sorts, and other standard library algorithms using this thread pool.
+This approach is easy to start with and also keeps your code future-proof by employing standard C++ mechanisms.
+It is easy to later change parallelism libraries (or start using the compiler-provided ones, once they're available to you).
 
 For example, use [std::for_each](https://en.cppreference.com/w/cpp/algorithm/for_each) to iterate over a vector in parallel:
 
@@ -161,7 +163,7 @@ FetchContent_MakeAvailable(task-thread-pool)
 target_link_libraries(YOUR_TARGET task-thread-pool::task-thread-pool)
 ```
 
-Use `GIT_TAG main` to always use the latest version, or replace `main` with a version number to pin a fixed version.
+Use `GIT_TAG main` to use the latest version, or replace `main` with a version number to pin a fixed version.
 
 ### vcpkg
 
