@@ -51,6 +51,22 @@ To wait for all tasks to complete:
 pool.wait_for_tasks();
 ```
 
+## Parallel Loops and More
+
+Use [poolSTL](https://github.com/alugowski/poolSTL) to parallelize loops, transforms, sorts, and other standard library algorithms using this thread pool.
+
+For example, use [std::for_each](https://en.cppreference.com/w/cpp/algorithm/for_each) to iterate over a vector in parallel:
+
+```c++
+std::vector<int> v = {0, 1, 2, 3, 4, 5};
+
+task_thread_pool::task_thread_pool pool;
+
+std::for_each(poolstl::par_pool(pool), v.cbegin(), v.cend(), [](auto value) {
+    std::cout << value;  // loop body
+});
+```
+
 # Example
 
 ```c++
