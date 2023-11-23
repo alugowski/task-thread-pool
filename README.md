@@ -57,14 +57,21 @@ Use [poolSTL](https://github.com/alugowski/poolSTL) to parallelize loops, transf
 This approach is easy to start with and also keeps your code future-proof by employing standard C++ mechanisms.
 It is easy to later change parallelism libraries (or start using the compiler-provided ones, once they're available to you).
 
-For example, use [std::for_each](https://en.cppreference.com/w/cpp/algorithm/for_each) to iterate over a vector in parallel:
+For example, use [std::for_each](https://en.cppreference.com/w/cpp/algorithm/for_each) to parallelize `for` and `for-each` loops:
 
 ```c++
 std::vector<int> v = {0, 1, 2, 3, 4, 5};
-
 task_thread_pool::task_thread_pool pool;
 
-std::for_each(poolstl::par_pool(pool), v.cbegin(), v.cend(), [](auto value) {
+// parallel for
+using poolstl::iota_iter;
+
+std::for_each(poolstl::par.on(pool), iota_iter<int>(0), iota_iter<int>(v.size()), [](int i) {
+    std::cout << v[i];  // loop body
+});
+
+// parallel for-each
+std::for_each(poolstl::par.on(pool), v.cbegin(), v.cend(), [](auto value) {
     std::cout << value;  // loop body
 });
 ```
