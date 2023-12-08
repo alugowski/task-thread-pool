@@ -90,7 +90,7 @@
 // Version macros.
 #define TASK_THREAD_POOL_VERSION_MAJOR 1
 #define TASK_THREAD_POOL_VERSION_MINOR 0
-#define TASK_THREAD_POOL_VERSION_PATCH 9
+#define TASK_THREAD_POOL_VERSION_PATCH 10
 
 #include <condition_variable>
 #include <functional>
