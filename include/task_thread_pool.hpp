@@ -279,10 +279,18 @@ namespace task_thread_pool {
 #endif
             >
         TTP_NODISCARD std::future<R> submit(F&& func, A&&... args) {
+#if defined(_MSVC_LANG)
+            // MSVC's packaged_task is not movable.
             std::shared_ptr<std::packaged_task<R()>> ptask =
                 std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             submit_detach([ptask] { (*ptask)(); });
             return ptask->get_future();
+#else
+            std::packaged_task<R()> task(std::bind(std::forward<F>(func), std::forward<A>(args)...));
+            auto ret = task.get_future();
+            submit_detach(std::move(task));
+            return ret;
+#endif
         }
 
         /**
