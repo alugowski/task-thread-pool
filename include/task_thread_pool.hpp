@@ -279,8 +279,10 @@ namespace task_thread_pool {
 #endif
             >
         TTP_NODISCARD std::future<R> submit(F&& func, A&&... args) {
-#if defined(_MSVC_LANG)
-            // MSVC's packaged_task is not movable.
+#if defined(_MSC_VER)
+            // MSVC's packaged_task is not movable even though it should be.
+            // Discussion about this bug and its future fix:
+            // https://developercommunity.visualstudio.com/t/unable-to-move-stdpackaged-task-into-any-stl-conta/108672
             std::shared_ptr<std::packaged_task<R()>> ptask =
                 std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
             submit_detach([ptask] { (*ptask)(); });
