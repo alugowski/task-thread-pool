@@ -13,7 +13,7 @@ Easily add parallelism to your project without introducing heavy dependencies.
 * [Small single header file](https://raw.githubusercontent.com/alugowski/task-thread-pool/main/include/task_thread_pool.hpp) and permissive licensing means easy integration.
 * Tested on all major platforms and compilers:
   * Linux, macOS, Windows
-  * GCC, LLVM/Clang, MSVC
+  * GCC, LLVM/Clang, MSVC, MinGW, Emscripten
     * CI tests on GCC 7+ and LLVM 5+, should work on older
   * C++11, C++14, C++17, C++20, C++23
 * Comprehensive test suite, including stress tests.
