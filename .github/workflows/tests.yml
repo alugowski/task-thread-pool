@@ -89,6 +89,7 @@ jobs:
             OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug
             cd ../..
           done
+        shell: bash
 
       - name: Upload Coverage to Codecov
         if: matrix.gcov_executable != '' || runner.os == 'Windows'
