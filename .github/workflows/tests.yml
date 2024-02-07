@@ -62,7 +62,10 @@ jobs:
 
       - name: Setup Windows
         if: runner.os == 'Windows'
-        run: choco install opencppcoverage
+        run: |
+          choco install --no-progress opencppcoverage
+          dir "C:\Program Files\OpenCppCoverage\"
+          Add-Content $env:GITHUB_PATH "C:\Program Files\OpenCppCoverage\bin"
 
       - name: Build and Test
         run: |
