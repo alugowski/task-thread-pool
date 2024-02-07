@@ -82,7 +82,6 @@ jobs:
 
       - name: Create code coverage report (Windows)
         if: runner.os == 'Windows'
-        working-directory: ./build/tests
         run: |
           choco install opencppcoverage
           for cppstd in ${{ matrix.cppstd }}; do
