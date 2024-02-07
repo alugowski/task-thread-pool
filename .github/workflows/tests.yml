@@ -60,6 +60,10 @@ jobs:
           version: ${{ matrix.llvm-version }}
           env: true
 
+      - name: Setup Windows
+        if: runner.os == 'Windows'
+        run: choco install opencppcoverage
+
       - name: Build and Test
         run: |
           pip install gcovr
@@ -76,17 +80,9 @@ jobs:
             if [ -n '${{ matrix.gcov_executable }}' ]; then
               gcovr --delete --root ../../ --print-summary --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}' --merge-mode-functions=separate --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
             fi
-            cd ../..
-          done
-        shell: bash
-
-      - name: Create code coverage report (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install opencppcoverage
-          for cppstd in ${{ matrix.cppstd }}; do
-            cd build-cpp${cppstd}/tests
-            OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug
+            if [ '${{ runner.os }}' -eq 'Windows' ]; then
+              OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug
+            fi
             cd ../..
           done
         shell: bash
