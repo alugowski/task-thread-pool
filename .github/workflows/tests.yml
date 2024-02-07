@@ -76,5 +76,7 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         uses: codecov/codecov-action@v4
         with:
-          gcov: true
-          gcov_include: include/*
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./include
