@@ -17,12 +17,14 @@ jobs:
             llvm-version: "5"
             description: "LLVM 5"
             cppstd: "11 14 17"
+            gcov_executable: "llvm-cov gcov"
 
           - os: ubuntu-20.04
             # oldest GCC that the setup-gcc action is able to install
             gcc-version: "7"
             description: "GCC 7"
             cppstd: "11 14"
+            gcov_executable: "gcov"
 
           - os: ubuntu-latest
             gcc-version: "13"
@@ -32,10 +34,12 @@ jobs:
           - os: ubuntu-latest
             # default GCC, which has gcov
             cppstd: "11 14 17 20 23"
+            gcov_executable: "gcov"
 
           - os: macos-latest
             # uses Apple Clang
             cppstd: "11 14 17 20 23"
+            gcov_executable: "llvm-cov gcov"
 
           - os: windows-latest
             # uses MSVC
@@ -59,6 +63,8 @@ jobs:
 
       - name: Build and Test
         run: |
+          pip install gcovr
+
           for cppstd in ${{ matrix.cppstd }}; do
             echo ""
             echo ""
@@ -68,12 +74,26 @@ jobs:
             cmake --build $BUILD --config Debug
             cd $BUILD/tests
             ctest -C Debug --output-on-failure --verbose
+            if [ -n '${{ matrix.gcov_executable }}' ]; then
+              gcovr --delete --root ../../ --print-summary --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}' --merge-mode-functions=separate --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
+            fi
             cd ../..
           done
         shell: bash
 
+      - name: Create code coverage report (Windows)
+        if: runner.os == 'Windows'
+        working-directory: ./build/tests
+        run: |
+          choco install opencppcoverage
+          for cppstd in ${{ matrix.cppstd }}; do
+            cd build-cpp${cppstd}/tests
+            OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug
+            cd ../..
+          done
+
       - name: Upload Coverage to Codecov
-        if: contains(matrix.os, 'ubuntu')
+        if: matrix.gcov_executable != '' || runner.os == 'Windows'
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
