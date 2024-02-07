@@ -83,7 +83,7 @@ jobs:
               gcovr --delete --root ../../ --print-summary --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}' --merge-mode-functions=separate --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
             fi
             if [ '${{ runner.os }}' = 'Windows' ]; then
-              OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug
+              OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children --modules task-thread-pool -- ctest -C Debug
             fi
             cd ../..
           done
