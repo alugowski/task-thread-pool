@@ -12,6 +12,8 @@ parsers:
     branch_detection:
       conditional: no
       loop: no
+  cobertura:
+    partials_as_hits: true
 ignore:
   - "tests"
   - "benchmark"
