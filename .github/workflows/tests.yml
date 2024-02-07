@@ -24,7 +24,6 @@ jobs:
             gcc-version: "7"
             description: "GCC 7"
             cppstd: "11 14"
-            gcov_executable: "gcov"
 
           - os: ubuntu-latest
             gcc-version: "13"
