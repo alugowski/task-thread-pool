@@ -38,7 +38,6 @@ jobs:
           - os: macos-latest
             # uses Apple Clang
             cppstd: "11 14 17 20 23"
-            gcov_executable: "xcrun llvm-cov gcov"
 
           - os: windows-latest
             # uses MSVC
@@ -60,12 +59,6 @@ jobs:
           version: ${{ matrix.llvm-version }}
           env: true
 
-      - name: Setup Windows
-        if: runner.os == 'Windows'
-        run: |
-          choco install --no-progress opencppcoverage
-          Add-Content $env:GITHUB_PATH "C:\Program Files\OpenCppCoverage"
-
       - name: Build and Test
         run: |
           pip install gcovr
@@ -82,15 +75,12 @@ jobs:
             if [ -n '${{ matrix.gcov_executable }}' ]; then
               gcovr --delete --root ../../ --print-summary --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}' --merge-mode-functions=separate --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
             fi
-            if [ '${{ runner.os }}' = 'Windows' ] && [ "$cppstd" = '17' ]; then
-              OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children --modules task-thread-pool -- ctest -C Debug
-            fi
             cd ../..
           done
         shell: bash
 
       - name: Upload Coverage to Codecov
-        if: matrix.gcov_executable != '' || runner.os == 'Windows'
+        if: matrix.gcov_executable != ''
         uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
