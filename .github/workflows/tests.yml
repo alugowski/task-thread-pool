@@ -51,7 +51,7 @@ jobs:
           version: ${{ matrix.gcc-version }}
 
       - name: Setup LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v1
+        uses: KyleMayes/install-llvm-action@v2
         if: ${{ matrix.llvm-version != '' }}
         with:
           version: ${{ matrix.llvm-version }}
