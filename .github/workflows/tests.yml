@@ -14,8 +14,8 @@ jobs:
         include:
           - os: ubuntu-20.04
             # oldest LLVM that the install-llvm-action action is able to install
-            llvm-version: "5"
-            description: "LLVM 5"
+            llvm-version: "7"
+            description: "LLVM 7"
             cppstd: "11 14 17"
 
           - os: ubuntu-20.04
