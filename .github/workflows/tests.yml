@@ -17,6 +17,7 @@ jobs:
             llvm-version: "7"
             description: "LLVM 7"
             cppstd: "11 14 17"
+            gcov_executable: "llvm-cov gcov"
 
           - os: ubuntu-20.04
             # oldest GCC that the setup-gcc action is able to install
@@ -32,6 +33,7 @@ jobs:
           - os: ubuntu-latest
             # default GCC, which has gcov
             cppstd: "11 14 17 20 23"
+            gcov_executable: "gcov"
 
           - os: macos-latest
             # uses Apple Clang
@@ -59,6 +61,8 @@ jobs:
 
       - name: Build and Test
         run: |
+          pip install gcovr
+
           for cppstd in ${{ matrix.cppstd }}; do
             echo ""
             echo ""
@@ -68,13 +72,17 @@ jobs:
             cmake --build $BUILD --config Debug
             cd $BUILD/tests
             ctest -C Debug --output-on-failure --verbose
+            if [ -n '${{ matrix.gcov_executable }}' ]; then
+              gcovr --delete --root ../../ --print-summary --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}' --merge-mode-functions=separate --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
+            fi
             cd ../..
           done
         shell: bash
 
       - name: Upload Coverage to Codecov
-        if: contains(matrix.os, 'ubuntu')
-        uses: codecov/codecov-action@v3
+        if: matrix.gcov_executable != ''
+        uses: codecov/codecov-action@v4
         with:
-          gcov: true
-          gcov_include: include/*
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
